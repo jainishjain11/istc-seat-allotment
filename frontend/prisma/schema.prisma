@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  password    String
+  dob         DateTime
+  category    String
+  examRank    Int          @map("exam_rank")
+  eligible    Boolean      @map("is_eligible") @default(false)
+  preferences Preference[]
+  allocation  Allocation?  
+}
+
+model Preference {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  courseId    String   // ✅ Removed @map("program")
+  priority    Int
+  Candidate   Candidate @relation(fields: [candidateId], references: [id])
+
+  @@unique([candidateId, priority])
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model Allocation {
+  id          Int       @id @default(autoincrement())
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  candidateId Int       @unique
+  courseId    String    // ✅ Removed @map("program")
+  status      String    
+}
